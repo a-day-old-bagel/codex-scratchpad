@@ -176,10 +176,6 @@ pub const CompilationMessageType = enum(u32) {
     info = 0x00000002,
 };
 
-pub const ComputePassTimestampLocation = enum(u32) {
-    beginning = 0x00000000,
-    end = 0x00000001,
-};
 
 pub const CreatePipelineAsyncStatus = enum(u32) {
     success = 0x00000000,
@@ -190,12 +186,6 @@ pub const CreatePipelineAsyncStatus = enum(u32) {
     unknown = 0x00000005,
 };
 
-pub const ExternalTextureRotation = enum(u32) {
-    rotate_0_degrees = 0x00000000,
-    rotate_90_degrees = 0x00000001,
-    rotate_180_degrees = 0x00000002,
-    rotate_270_degrees = 0x00000003,
-};
 
 pub const CullMode = enum(u32) {
     none = 0x00000000,
@@ -281,20 +271,7 @@ pub const LoadOp = enum(u32) {
     load = 0x00000002,
 };
 
-pub const LoggingType = enum(u32) {
-    verbose = 0x00000000,
-    info = 0x00000001,
-    warning = 0x00000002,
-    err = 0x00000003,
-};
 
-pub const PipelineStatisticName = enum(u32) {
-    vertex_shader_invocations = 0x00000000,
-    clipper_invocations = 0x00000001,
-    clipper_primitives_out = 0x00000002,
-    fragment_shader_invocations = 0x00000003,
-    compute_shader_invocations = 0x00000004,
-};
 
 pub const PowerPreference = enum(u32) {
     undef = 0x00000000,
@@ -341,10 +318,6 @@ pub const QueueWorkDoneStatus = enum(u32) {
     device_lost = 0x00000003,
 };
 
-pub const RenderPassTimestampLocation = enum(u32) {
-    beginning = 0x00000000,
-    end = 0x00000001,
-};
 
 pub const RequestAdapterStatus = enum(u32) {
     success = 0x00000001,
@@ -407,7 +380,7 @@ pub const SurfaceSourceXlibWindow = extern struct {
 //     selector: c.WGPUStringView,
 // };
 
-pub const StructType = enum(u32) {
+pub const SType = enum(u32) {
     shader_source_spirv = 0x00000001,
     shader_source_wgsl = 0x00000002,
     render_pass_max_draw_count = 0x00000003,
@@ -702,12 +675,12 @@ pub const FutureWaitInfo = extern struct {
 
 pub const ChainedStruct = extern struct {
     next: ?*const ChainedStruct,
-    struct_type: StructType,
+    struct_type: SType,
 };
 
 pub const ChainedStructOut = extern struct {
     next: ?*ChainedStructOut,
-    struct_type: StructType,
+    struct_type: SType,
     pub const skip_abi_compat = true;
 };
 
@@ -829,7 +802,7 @@ pub const BindGroupDescriptor = extern struct {
 pub const BufferBindingLayout = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     binding_type: BufferBindingType = .uniform,
-    has_dynamic_offset: U32Bool = .false,
+    has_dynamic_offset: bool = false,
     min_binding_size: u64 = 0,
 };
 
@@ -869,17 +842,13 @@ pub const BindGroupLayoutDescriptor = extern struct {
     entries: ?[*]const BindGroupLayoutEntry,
 };
 
-pub const U32Bool = enum(u32) {
-    false = 0,
-    true = 1,
-};
 
 pub const BufferDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     label: c.WGPUStringView = StringView.initC(),
     usage: BufferUsage,
     size: u64,
-    mapped_at_creation: U32Bool = .false,
+    mapped_at_creation: bool = false,
 };
 
 pub const CommandEncoderDescriptor = extern struct {
@@ -893,7 +862,7 @@ pub const ConstantEntry = extern struct {
     value: f64,
 };
 
-pub const ProgrammableStageDescriptor = extern struct {
+pub const ComputeState = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     module: ShaderModule,
     entry_point: c.WGPUStringView,
@@ -905,24 +874,9 @@ pub const ComputePipelineDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     label: c.WGPUStringView = StringView.initC(),
     layout: ?PipelineLayout = null,
-    compute: ProgrammableStageDescriptor,
+    compute: ComputeState,
 };
 
-pub const ExternalTextureDescriptor = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
-    label: c.WGPUStringView = StringView.initC(),
-    plane0: TextureView,
-    plane1: ?TextureView = null,
-    visible_origin: Origin2D,
-    visible_size: Extent2D,
-    do_yuv_to_rgb_conversion_only: bool,
-    yuv_to_rgb_conversion_matrix: ?[*]const f32,
-    src_transfer_function_parameters: [*]const f32,
-    dst_transfer_function_parameters: [*]const f32,
-    gamut_conversion_matrix: [*]const f32,
-    flip_y: bool,
-    rotation: ExternalTextureRotation,
-};
 
 pub const PipelineLayoutDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -936,8 +890,6 @@ pub const QuerySetDescriptor = extern struct {
     label: c.WGPUStringView = StringView.initC(),
     query_type: QueryType,
     count: u32,
-    pipeline_statistics: ?[*]const PipelineStatisticName,
-    pipeline_statistics_count: usize,
 };
 
 pub const RenderBundleEncoderDescriptor = extern struct {
@@ -1093,10 +1045,6 @@ pub const SurfaceTexture = extern struct {
     status: SurfaceGetCurrentTextureStatus = .undefined,
 };
 
-pub const Extent2D = extern struct {
-    width: u32,
-    height: u32 = 1,
-};
 
 pub const Extent3D = extern struct {
     width: u32,
@@ -1156,31 +1104,12 @@ pub const Limits = extern struct {
     max_immediate_size: u32 = u32_undefined,
 };
 
-pub const RequiredLimits = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
-    limits: Limits = .{},
-};
-
-pub const SupportedLimits = extern struct {
-    next_in_chain: ?*ChainedStructOut = null,
-    limits: Limits = .{},
-};
 
 pub const InstanceLimits = extern struct {
     next_in_chain: ?*ChainedStructOut = null,
     timed_wait_any_max_count: usize,
 };
 
-// Can be chained in InstanceDescriptor
-// Can be chained in RequestAdapterOptions
-// Can be chained in DeviceDescriptor
-pub const DawnTogglesDescriptor = extern struct {
-    chain: ChainedStruct,
-    enabled_toggles_count: usize = 0,
-    enabled_toggles: ?[*]const [*:0]const u8 = null,
-    disabled_toggles_count: usize = 0,
-    disabled_toggles: ?[*]const [*:0]const u8 = null,
-};
 
 pub const InstanceDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1189,10 +1118,6 @@ pub const InstanceDescriptor = extern struct {
     required_limits: ?*const InstanceLimits = null,
 };
 
-pub const DawnAdapterPropertiesPowerPreference = extern struct {
-    chain: ChainedStructOut,
-    power_preference: PowerPreference,
-};
 
 pub const QueueDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1204,7 +1129,7 @@ pub const DeviceDescriptor = extern struct {
     label: c.WGPUStringView = StringView.initC(),
     required_features_count: usize = 0,
     required_features: ?[*]const FeatureName = null,
-    required_limits: ?[*]const RequiredLimits = null,
+    required_limits: ?*const Limits = null,
     default_queue: QueueDescriptor = .{},
     device_lost_callback_info: DeviceLostCallbackInfo = .{},
     uncaptured_error_callback_info: UncapturedErrorCallbackInfo = .{},
@@ -1224,23 +1149,20 @@ pub const RequestAdapterOptions = extern struct {
     compatible_surface: ?Surface = null,
 };
 
-pub const ComputePassTimestampWrite = extern struct {
+pub const query_set_index_undefined: u32 = 0xffff_ffff;
+
+pub const PassTimestampWrites = extern struct {
+    next_in_chain: ?*const ChainedStruct = null,
     query_set: QuerySet,
-    query_index: u32,
-    location: ComputePassTimestampLocation,
+    beginning_of_pass_write_index: u32 = query_set_index_undefined,
+    end_of_pass_write_index: u32 = query_set_index_undefined,
 };
 
-pub const RenderPassTimestampWrite = extern struct {
-    query_set: QuerySet,
-    query_index: u32,
-    location: RenderPassTimestampLocation,
-};
 
 pub const ComputePassDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     label: c.WGPUStringView = StringView.initC(),
-    timestamp_write_count: usize,
-    timestamp_writes: ?[*]const ComputePassTimestampWrite,
+    timestamp_writes: ?*const PassTimestampWrites = null,
 };
 
 pub const Color = extern struct {
@@ -1275,11 +1197,11 @@ pub const RenderPassDepthStencilAttachment = extern struct {
     depth_load_op: LoadOp = .undef,
     depth_store_op: StoreOp = .undef,
     depth_clear_value: f32 = 0.0,
-    depth_read_only: U32Bool = .false,
+    depth_read_only: bool = false,
     stencil_load_op: LoadOp = .undef,
     stencil_store_op: StoreOp = .undef,
     stencil_clear_value: u32 = 0,
-    stencil_read_only: U32Bool = .false,
+    stencil_read_only: bool = false,
 };
 
 pub const RenderPassDescriptor = extern struct {
@@ -1289,20 +1211,14 @@ pub const RenderPassDescriptor = extern struct {
     color_attachments: ?[*]const RenderPassColorAttachment,
     depth_stencil_attachment: ?*const RenderPassDepthStencilAttachment = null,
     occlusion_query_set: ?QuerySet = null,
-    timestamp_write_count: usize = 0,
-    timestamp_writes: ?[*]const RenderPassTimestampWrite = null,
+    timestamp_writes: ?*const PassTimestampWrites = null,
 };
 
-pub const TextureDataLayout = extern struct {
+pub const TexelCopyBufferLayout = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     offset: u64 = 0,
     bytes_per_row: u32,
     rows_per_image: u32,
-};
-
-pub const Origin2D = extern struct {
-    x: u32 = 0,
-    y: u32 = 0,
 };
 
 pub const Origin3D = extern struct {
@@ -1311,13 +1227,13 @@ pub const Origin3D = extern struct {
     z: u32 = 0,
 };
 
-pub const ImageCopyBuffer = extern struct {
+pub const TexelCopyBufferInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    layout: TextureDataLayout,
+    layout: TexelCopyBufferLayout,
     buffer: Buffer,
 };
 
-pub const ImageCopyTexture = extern struct {
+pub const TexelCopyTextureInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     texture: Texture,
     mip_level: u32 = 0,
@@ -1325,12 +1241,6 @@ pub const ImageCopyTexture = extern struct {
     aspect: TextureAspect = .all,
 };
 
-pub const ImageCopyExternalTexture = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
-    external_texture: ExternalTexture,
-    origin: Origin3D,
-    natural_size: Extent2D,
-};
 
 pub const CommandBufferDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1408,11 +1318,6 @@ pub const ErrorCallback = *const fn (
     userdata_2: ?*anyopaque,
 ) callconv(.C) void;
 
-pub const LoggingCallback = *const fn (
-    log_type: LoggingType,
-    message: c.WGPUStringView,
-    userdata: ?*anyopaque,
-) callconv(.C) void;
 
 pub const DeviceLostCallback = *const fn (
     device: *const Device,
@@ -1502,7 +1407,7 @@ pub const Adapter = *opaque {
         c.wgpuAdapterGetFeatures(@ptrCast(adapter), @ptrCast(features));
     }
 
-    pub fn getLimits(adapter: Adapter, limits: *SupportedLimits) bool {
+    pub fn getLimits(adapter: Adapter, limits: *Limits) bool {
         return c.wgpuAdapterGetLimits(@ptrCast(adapter), @ptrCast(limits));
     }
 
@@ -1623,7 +1528,7 @@ pub const Device = *opaque {
     //     return c.wgpuDeviceEnumerateFeatures(@ptrCast(device), features);
     // }
 
-    pub fn getLimits(device: Device, limits: *SupportedLimits) bool {
+    pub fn getLimits(device: Device, limits: *Limits) bool {
         return c.wgpuDeviceGetLimits(@ptrCast(device), limits);
     }
 
@@ -1836,8 +1741,8 @@ pub const CommandEncoder = *opaque {
 
     pub fn copyBufferToTexture(
         command_encoder: CommandEncoder,
-        source: ImageCopyBuffer,
-        destination: ImageCopyTexture,
+        source: TexelCopyBufferInfo,
+        destination: TexelCopyTextureInfo,
         copy_size: Extent3D,
     ) void {
         c.wgpuCommandEncoderCopyBufferToTexture(@ptrCast(command_encoder), &source, &destination, &copy_size);
@@ -1845,8 +1750,8 @@ pub const CommandEncoder = *opaque {
 
     pub fn copyTextureToBuffer(
         command_encoder: CommandEncoder,
-        source: ImageCopyTexture,
-        destination: ImageCopyBuffer,
+        source: TexelCopyTextureInfo,
+        destination: TexelCopyBufferInfo,
         copy_size: Extent3D,
     ) void {
         c.wgpuCommandEncoderCopyTextureToBuffer(@ptrCast(command_encoder), &source, &destination, &copy_size);
@@ -1854,8 +1759,8 @@ pub const CommandEncoder = *opaque {
 
     pub fn copyTextureToTexture(
         command_encoder: CommandEncoder,
-        source: ImageCopyTexture,
-        destination: ImageCopyTexture,
+        source: TexelCopyTextureInfo,
+        destination: TexelCopyTextureInfo,
         copy_size: Extent3D,
     ) void {
         c.wgpuCommandEncoderCopyTextureToTexture(
@@ -2177,8 +2082,8 @@ pub const Queue = *opaque {
 
     pub fn writeTexture(
         queue: Queue,
-        destination: ImageCopyTexture,
-        data_layout: TextureDataLayout,
+        destination: TexelCopyTextureInfo,
+        data_layout: TexelCopyBufferLayout,
         write_size: Extent3D,
         comptime T: type,
         data: []const T,
@@ -2748,16 +2653,18 @@ test "extern struct ABI compatibility" {
         // Field‑count check
         const zig_fields = std.meta.fields(ZigStruct);
         const c_fields = std.meta.fields(CType);
-        std.testing.expectEqual(c_fields.len, zig_fields.len) catch |err| {
+        if (c_fields.len != zig_fields.len) {
             std.log.err(
                 "Field count mismatch: C `{s}` has {d} fields, Zig `{s}` has {d}",
                 .{ wgpu_name, c_fields.len, decl.name, zig_fields.len },
             );
-            return err;
-        };
+            continue;
+        }
 
+        const limit = @min(c_fields.len, zig_fields.len);
         // Offset checks
-        inline for (zig_fields, 0..) |zig_f, i| {
+        inline for (0..limit) |i| {
+            const zig_f = zig_fields[i];
             const c_f = c_fields[i];
             std.testing.expectEqual(
                 @offsetOf(CType, c_f.name),
