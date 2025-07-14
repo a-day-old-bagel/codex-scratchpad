@@ -35,14 +35,15 @@ pub const AdapterType = enum(u32) {
 };
 
 pub const AddressMode = enum(u32) {
-    repeat = 0x00000000,
-    mirror_repeat = 0x00000001,
-    clamp_to_edge = 0x00000002,
+    undef = 0x00000000,
+    clamp_to_edge = 0x00000001,
+    repeat = 0x00000002,
+    mirror_repeat = 0x00000003,
 };
 
 pub const CompositeAlphaMode = enum(u32) {
     auto = 0x00000000,
-    opaq = 0x00000001,
+    @"opaque" = 0x00000001,
     premultiplied = 0x00000002,
     unpremultiplied = 0x00000003,
     inherit = 0x00000004,
@@ -50,7 +51,7 @@ pub const CompositeAlphaMode = enum(u32) {
 
 pub const BackendType = enum(u32) {
     undef = 0x00000000,
-    nul,
+    null,
     webgpu,
     d3d11,
     d3d12,
@@ -76,21 +77,30 @@ pub const BlendFactor = switch (emscripten) {
         src_alpha_saturated = 0x0000000B,
         constant = 0x0000000C,
         one_minus_constant = 0x0000000D,
+        src1 = 0x0000000E,
+        one_minus_src1 = 0x0000000F,
+        src1_alpha = 0x00000010,
+        one_minus_src1_alpha = 0x00000011,
     },
     false => enum(u32) {
-        zero = 0x00000000,
-        one = 0x00000001,
-        src = 0x00000002,
-        one_minus_src = 0x00000003,
-        src_alpha = 0x00000004,
-        one_minus_src_alpha = 0x00000005,
-        dst = 0x00000006,
-        one_minus_dst = 0x00000007,
-        dst_alpha = 0x00000008,
-        one_minus_dst_alpha = 0x00000009,
-        src_alpha_saturated = 0x0000000A,
-        constant = 0x0000000B,
-        one_minus_constant = 0x0000000C,
+        undef = 0x00000000,
+        zero = 0x00000001,
+        one = 0x00000002,
+        src = 0x00000003,
+        one_minus_src = 0x00000004,
+        src_alpha = 0x00000005,
+        one_minus_src_alpha = 0x00000006,
+        dst = 0x00000007,
+        one_minus_dst = 0x00000008,
+        dst_alpha = 0x00000009,
+        one_minus_dst_alpha = 0x0000000A,
+        src_alpha_saturated = 0x0000000B,
+        constant = 0x0000000C,
+        one_minus_constant = 0x0000000D,
+        src1 = 0x0000000E,
+        one_minus_src1 = 0x0000000F,
+        src1_alpha = 0x00000010,
+        one_minus_src1_alpha = 0x00000011,
     },
 };
 
@@ -100,23 +110,25 @@ pub const BlendOperation = switch (emscripten) {
         add = 0x00000001,
         subtract = 0x00000002,
         reverse_subtract = 0x00000003,
-        min = 0x00000008,
-        max = 0x00000004,
+        min = 0x00000004,
+        max = 0x00000005,
     },
     false => enum(u32) {
-        add = 0x00000000,
-        subtract = 0x00000001,
-        reverse_subtract = 0x00000002,
-        min = 0x00000003,
-        max = 0x00000004,
+        undef = 0x00000000,
+        add = 0x00000001,
+        subtract = 0x00000002,
+        reverse_subtract = 0x00000003,
+        min = 0x00000004,
+        max = 0x00000005,
     },
 };
 
 pub const BufferBindingType = enum(u32) {
-    undef = 0x00000000,
-    uniform = 0x00000001,
-    storage = 0x00000002,
-    read_only_storage = 0x00000003,
+    binding_not_used = 0x00000000,
+    undef = 0x00000001,
+    uniform = 0x00000002,
+    storage = 0x00000003,
+    read_only_storage = 0x00000004,
 };
 
 pub const MapAsyncStatus = enum(u32) {
@@ -164,33 +176,30 @@ pub const CompareFunction = enum(u32) {
 };
 
 pub const CompilationInfoRequestStatus = enum(u32) {
-    success = 0x00000000,
-    err = 0x00000001,
-    device_lost = 0x00000002,
-    unknown = 0x00000003,
+    success = 0x00000001,
+    callback_cancelled = 0x00000002,
 };
 
 pub const CompilationMessageType = enum(u32) {
-    err = 0x00000000,
-    warning = 0x00000001,
-    info = 0x00000002,
+    err = 0x00000001,
+    warning = 0x00000002,
+    info = 0x00000003,
 };
 
 
 pub const CreatePipelineAsyncStatus = enum(u32) {
-    success = 0x00000000,
-    validation_error = 0x00000001,
-    internal_error = 0x00000002,
-    device_lost = 0x00000003,
-    device_destroyed = 0x00000004,
-    unknown = 0x00000005,
+    success = 0x00000001,
+    callback_cancelled = 0x00000002,
+    validation_error = 0x00000003,
+    internal_error = 0x00000004,
 };
 
 
 pub const CullMode = enum(u32) {
-    none = 0x00000000,
-    front = 0x00000001,
-    back = 0x00000002,
+    undef = 0x00000000,
+    none = 0x00000001,
+    front = 0x00000002,
+    back = 0x00000003,
 };
 
 pub const DeviceLostReason = enum(u32) {
@@ -202,9 +211,9 @@ pub const DeviceLostReason = enum(u32) {
 };
 
 pub const ErrorFilter = enum(u32) {
-    validation = 0x00000000,
-    out_of_memory = 0x00000001,
-    internal = 0x00000002,
+    validation = 0x00000001,
+    out_of_memory = 0x00000002,
+    internal = 0x00000003,
 };
 
 pub const ErrorType = enum(u32) {
@@ -245,18 +254,21 @@ pub const FeatureName = enum(u32) {
 };
 
 pub const FilterMode = enum(u32) {
-    nearest = 0x00000000,
-    linear = 0x00000001,
+    undef = 0x00000000,
+    nearest = 0x00000001,
+    linear = 0x00000002,
 };
 
 pub const MipmapFilterMode = enum(u32) {
-    nearest = 0x00000000,
-    linear = 0x00000001,
+    undef = 0x00000000,
+    nearest = 0x00000001,
+    linear = 0x00000002,
 };
 
 pub const FrontFace = enum(u32) {
-    ccw = 0x00000000,
-    cw = 0x00000001,
+    undef = 0x00000000,
+    ccw = 0x00000001,
+    cw = 0x00000002,
 };
 
 pub const IndexFormat = enum(u32) {
@@ -267,8 +279,8 @@ pub const IndexFormat = enum(u32) {
 
 pub const LoadOp = enum(u32) {
     undef = 0x00000000,
-    clear = 0x00000001,
-    load = 0x00000002,
+    load = 0x00000001,
+    clear = 0x00000002,
 };
 
 
@@ -306,16 +318,14 @@ pub const PrimitiveTopology = switch (emscripten) {
 };
 
 pub const QueryType = enum(u32) {
-    occlusion = 0x00000000,
-    pipeline_statistics = 0x00000001,
+    occlusion = 0x00000001,
     timestamp = 0x00000002,
 };
 
 pub const QueueWorkDoneStatus = enum(u32) {
-    success = 0x00000000,
-    err = 0x00000001,
-    unknown = 0x00000002,
-    device_lost = 0x00000003,
+    success = 0x00000001,
+    callback_cancelled = 0x00000002,
+    err = 0x00000003,
 };
 
 
@@ -333,7 +343,6 @@ pub const RequestDeviceStatus = enum(u32) {
 };
 
 pub const SurfaceGetCurrentTextureStatus = enum(u32) {
-    undefined = 0x00000000,
     success_optimal = 0x00000001,
     success_suboptimal = 0x00000002,
     timeout = 0x00000003,
@@ -395,26 +404,31 @@ pub const SType = enum(u32) {
 };
 
 pub const SamplerBindingType = enum(u32) {
-    undef = 0x00000000,
-    filtering = 0x00000001,
-    non_filtering = 0x00000002,
-    comparison = 0x00000003,
+    binding_not_used = 0x00000000,
+    undef = 0x00000001,
+    filtering = 0x00000002,
+    non_filtering = 0x00000003,
+    comparison = 0x00000004,
 };
 
 pub const StencilOperation = enum(u32) {
-    keep = 0x00000000,
-    zero = 0x00000001,
-    replace = 0x00000002,
-    invert = 0x00000003,
-    increment_lamp = 0x00000004,
-    decrement_clamp = 0x00000005,
-    increment_wrap = 0x00000006,
-    decrement_wrap = 0x00000007,
+    undef = 0x00000000,
+    keep = 0x00000001,
+    zero = 0x00000002,
+    replace = 0x00000003,
+    invert = 0x00000004,
+    increment_clamp = 0x00000005,
+    decrement_clamp = 0x00000006,
+    increment_wrap = 0x00000007,
+    decrement_wrap = 0x00000008,
 };
 
 pub const StorageTextureAccess = enum(u32) {
-    undef = 0x00000000,
-    write_only = 0x00000001,
+    binding_not_used = 0x00000000,
+    undef = 0x00000001,
+    write_only = 0x00000002,
+    read_only = 0x00000003,
+    read_write = 0x00000004,
 };
 
 pub const StoreOp = enum(u32) {
@@ -424,11 +438,10 @@ pub const StoreOp = enum(u32) {
 };
 
 pub const TextureAspect = enum(u32) {
-    all = 0x00000000,
-    stencil_only = 0x00000001,
-    depth_only = 0x00000002,
-    plane0_only = 0x00000003,
-    plane1_only = 0x00000004,
+    undef = 0x00000000,
+    all = 0x00000001,
+    stencil_only = 0x00000002,
+    depth_only = 0x00000003,
 };
 
 pub const TextureDimension = switch (emscripten) {
@@ -439,9 +452,10 @@ pub const TextureDimension = switch (emscripten) {
         tdim_3d = 0x00000003,
     },
     false => enum(u32) {
-        tdim_1d = 0x00000000,
-        tdim_2d = 0x00000001,
-        tdim_3d = 0x00000002,
+        undef = 0x00000000,
+        tdim_1d = 0x00000001,
+        tdim_2d = 0x00000002,
+        tdim_3d = 0x00000003,
     },
 };
 
@@ -545,12 +559,13 @@ pub const TextureFormat = enum(u32) {
 };
 
 pub const TextureSampleType = enum(u32) {
-    undef = 0x00000000,
-    float = 0x00000001,
-    unfilterable_float = 0x00000002,
-    depth = 0x00000003,
-    sint = 0x00000004,
-    uint = 0x00000005,
+    binding_not_used = 0x00000000,
+    undef = 0x00000001,
+    float = 0x00000002,
+    unfilterable_float = 0x00000003,
+    depth = 0x00000004,
+    sint = 0x00000005,
+    uint = 0x00000006,
 };
 
 pub const TextureViewDimension = enum(u32) {
@@ -599,15 +614,14 @@ pub const VertexFormat = enum(u32) {
 
 pub const VertexStepMode = switch (emscripten) {
     true => enum(u32) {
-        undefined = 0x00000000,
-        vertex_buffer_not_used = 0x00000001,
-        vertex = 0x00000002,
-        instance = 0x00000003,
+        undef = 0x00000000,
+        vertex = 0x00000001,
+        instance = 0x00000002,
     },
     false => enum(u32) {
-        vertex = 0x00000000,
-        instance = 0x00000001,
-        vertex_buffer_not_used = 0x00000002,
+        undef = 0x00000000,
+        vertex = 0x00000001,
+        instance = 0x00000002,
     },
 };
 
@@ -1042,7 +1056,7 @@ pub const SurfaceConfiguration = extern struct {
 pub const SurfaceTexture = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     texture: ?Texture = null,
-    status: SurfaceGetCurrentTextureStatus = .undefined,
+    status: SurfaceGetCurrentTextureStatus = .success_optimal,
 };
 
 
