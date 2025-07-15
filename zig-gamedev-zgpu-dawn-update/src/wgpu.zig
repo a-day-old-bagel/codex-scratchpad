@@ -2549,11 +2549,11 @@ pub const TextureView = *opaque {
 const c_prefix = "WGPU";
 const max_supported_enum_name_len = 128;
 
-test "extern struct ABI compatibility" {
+test "extern_struct_abi_compatibility" {
     @setEvalBranchQuota(10_000);
-    std.testing.log_level = std.log.Level.debug;
-    slog.info("checking struct ABI compatibility...", .{});
+    // To see all output, set std.testing.log_level = std.log.Level.debug;
 
+    slog.info("checking struct ABI compatibility...", .{});
     inline for (comptime std.meta.declarations(@This())) |decl| {
         const ZigStruct = @field(@This(), decl.name);
         if (@TypeOf(ZigStruct) != type) continue;
@@ -2609,11 +2609,11 @@ test "extern struct ABI compatibility" {
     }
 }
 
-test "enum ABI compatibility" {
+test "enum_abi_compatibility" {
     @setEvalBranchQuota(100_000_000);
-    std.testing.log_level = std.log.Level.debug;
-    slog.info("checking enum ABI compatibility...", .{});
+    // To see all output, set std.testing.log_level = std.log.Level.debug;
 
+    slog.info("checking enum ABI compatibility...", .{});
     const c_import_decls = comptime blk: {
         break :blk std.meta.declarations(c);
     };
