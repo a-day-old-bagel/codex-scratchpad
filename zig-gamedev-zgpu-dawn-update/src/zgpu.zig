@@ -371,22 +371,24 @@ pub const GraphicsContext = struct {
     }
 
     pub fn destroy(gctx: *GraphicsContext, allocator: std.mem.Allocator) void {
-        // Wait for the GPU to finish all encoded commands.
-        while (gctx.stats.cpu_frame_number != gctx.stats.gpu_frame_number) {
-            gctx.device.tick();
-        }
+        // // Wait for the GPU to finish all encoded commands.
+        // while (gctx.stats.cpu_frame_number != gctx.stats.gpu_frame_number) {
+        //     gctx.device.tick();
+        // }
+        //
+        // // Wait for all outstanding mapAsync() calls to complete.
+        // wait_loop: while (true) {
+        //     gctx.device.tick();
+        //     var i: u32 = 0;
+        //     while (i < gctx.uniforms.stage.num) : (i += 1) {
+        //         if (gctx.uniforms.stage.buffers[i].slice == null) {
+        //             continue :wait_loop;
+        //         }
+        //     }
+        //     break;
+        // }
 
-        // Wait for all outstanding mapAsync() calls to complete.
-        wait_loop: while (true) {
-            gctx.device.tick();
-            var i: u32 = 0;
-            while (i < gctx.uniforms.stage.num) : (i += 1) {
-                if (gctx.uniforms.stage.buffers[i].slice == null) {
-                    continue :wait_loop;
-                }
-            }
-            break;
-        }
+        gctx.instance.processEvents();
 
         gctx.mipgens.deinit();
         gctx.pipeline_layout_pool.deinit(allocator);
@@ -1999,5 +2001,5 @@ fn formatToShaderFormat(format: wgpu.TextureFormat) []const u8 {
 //
 
 test "ref_all_decls" {
-    std.testing.refAllDecls(@This());
+    std.testing.refAllDeclsRecursive(@This());
 }
