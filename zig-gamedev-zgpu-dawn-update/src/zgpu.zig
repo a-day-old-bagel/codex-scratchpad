@@ -130,7 +130,7 @@ pub const GraphicsContext = struct {
 
         const adapter = adapter: {
             const Response = struct {
-                status: wgpu.RequestAdapterStatus = .err,
+                status: wgpu.RequestAdapterStatus = .@"error",
                 adapter: wgpu.Adapter = undefined,
             };
 
@@ -143,9 +143,7 @@ pub const GraphicsContext = struct {
                     userdata_2: ?*anyopaque,
                 ) callconv(.C) void {
                     _ = userdata_2;
-                    if (status != .success) std.log.err("Adapter Error: {s}", .{
-                        wgpu.StringView.zigFromC(message) orelse "no message"
-                    });
+                    if (status != .success) std.log.err("Adapter Error: {s}", .{wgpu.StringView.zigFromC(message) orelse "no message"});
                     const response = @as(*Response, @ptrCast(@alignCast(userdata_1)));
                     response.status = status;
                     response.adapter = adapter;
@@ -196,20 +194,20 @@ pub const GraphicsContext = struct {
             //     properties.name = "emscripten";
             //     properties.driver_description = "emscripten";
             //     properties.adapter_type = .unknown;
-            //     properties.backend_type = .undef;
+            //     properties.backend_type = .undefined;
             // }
             std.log.info("[zgpu] High-performance device has been selected:", .{});
-            std.log.info("[zgpu]   Device: {s}", .{ wgpu.StringView.zigFromC(adapter_info.device) orelse "N/A" });
-            std.log.info("[zgpu]   Driver: {s}", .{ wgpu.StringView.zigFromC(adapter_info.description) orelse "N/A" });
-            std.log.info("[zgpu]   Adapter type: {s}", .{ @tagName(adapter_info.adapter_type) });
-            std.log.info("[zgpu]   Backend type: {s}", .{ @tagName(adapter_info.backend_type) });
+            std.log.info("[zgpu]   Device: {s}", .{wgpu.StringView.zigFromC(adapter_info.device) orelse "N/A"});
+            std.log.info("[zgpu]   Driver: {s}", .{wgpu.StringView.zigFromC(adapter_info.description) orelse "N/A"});
+            std.log.info("[zgpu]   Adapter type: {s}", .{@tagName(adapter_info.adapter_type)});
+            std.log.info("[zgpu]   Backend type: {s}", .{@tagName(adapter_info.backend_type)});
         } else {
             std.log.err("[zgpu] Failed to get adapter info.", .{});
         }
 
         const device = device: {
             const Response = struct {
-                status: wgpu.RequestDeviceStatus = .err,
+                status: wgpu.RequestDeviceStatus = .@"error",
                 device: wgpu.Device = undefined,
             };
 
@@ -222,9 +220,7 @@ pub const GraphicsContext = struct {
                     userdata_2: ?*anyopaque,
                 ) callconv(.C) void {
                     _ = userdata_2;
-                    if (status != .success) std.log.err("Device Error: {s}", .{
-                        wgpu.StringView.zigFromC(message) orelse "no message"
-                    });
+                    if (status != .success) std.log.err("Device Error: {s}", .{wgpu.StringView.zigFromC(message) orelse "no message"});
                     const response = @as(*Response, @ptrCast(@alignCast(userdata_1)));
                     response.status = status;
                     response.device = device;
@@ -242,10 +238,7 @@ pub const GraphicsContext = struct {
                     _ = device;
                     _ = userdata_1;
                     _ = userdata_2;
-                    std.log.err("Device lost:\n\tReason: {s}\n\tMessage: {s}", .{
-                        @tagName(reason),
-                        wgpu.StringView.zigFromC(message) orelse "no message"
-                    });
+                    std.log.err("Device lost:\n\tReason: {s}\n\tMessage: {s}", .{ @tagName(reason), wgpu.StringView.zigFromC(message) orelse "no message" });
                 }
             }).callback;
 
@@ -260,10 +253,7 @@ pub const GraphicsContext = struct {
                     _ = device;
                     _ = userdata_1;
                     _ = userdata_2;
-                    std.log.err("Uncaptured Error:\n\tError Type: {s}\n\tMessage: {s}", .{
-                        @tagName(err_type),
-                        wgpu.StringView.zigFromC(message) orelse "no message"
-                    });
+                    std.log.err("Uncaptured Error:\n\tError Type: {s}\n\tMessage: {s}", .{ @tagName(err_type), wgpu.StringView.zigFromC(message) orelse "no message" });
                 }
             }).callback;
 
@@ -603,7 +593,6 @@ pub const GraphicsContext = struct {
         );
         return .surface_reconfigured;
 
-
         // // something isn't right with the surface, could be resize, could be something else
         // const surface_tex = maybe_surface_tex.texture orelse return .surface_fatal;
         // w.cur_res_x = surface_tex.getWidth();
@@ -680,8 +669,8 @@ pub const GraphicsContext = struct {
         const texture = gctx.lookupResource(texture_handle).?;
         const info = gctx.lookupResourceInfo(texture_handle).?;
         var dim = descriptor.dimension;
-        // if (!emscripten and dim == .undef) {
-        if (dim == .undef) {
+        // if (!emscripten and dim == .undefined) {
+        if (dim == .undefined) {
             dim = switch (info.dimension) {
                 .tdim_1d => .tvdim_1d,
                 .tdim_2d => .tvdim_2d,
@@ -690,7 +679,7 @@ pub const GraphicsContext = struct {
         }
         return gctx.texture_view_pool.addResource(gctx.*, .{
             .gpuobj = texture.createView(descriptor),
-            .format = if (descriptor.format == .undef) info.format else descriptor.format,
+            .format = if (descriptor.format == .undefined) info.format else descriptor.format,
             .dimension = dim,
             .base_mip_level = descriptor.base_mip_level,
             .mip_level_count = if (descriptor.mip_level_count == 0xffff_ffff)
@@ -1463,15 +1452,15 @@ pub const TextureInfo = struct {
     usage: wgpu.TextureUsage = .{},
     dimension: wgpu.TextureDimension = .tdim_1d,
     size: wgpu.Extent3D = .{ .width = 0 },
-    format: wgpu.TextureFormat = .undef,
+    format: wgpu.TextureFormat = .undefined,
     mip_level_count: u32 = 0,
     sample_count: u32 = 0,
 };
 
 pub const TextureViewInfo = struct {
     gpuobj: ?wgpu.TextureView = null,
-    format: wgpu.TextureFormat = .undef,
-    dimension: wgpu.TextureViewDimension = .undef,
+    format: wgpu.TextureFormat = .undefined,
+    dimension: wgpu.TextureViewDimension = .undefined,
     base_mip_level: u32 = 0,
     mip_level_count: u32 = 0,
     base_array_layer: u32 = 0,
@@ -1490,7 +1479,7 @@ pub const SamplerInfo = struct {
     mipmap_filter: wgpu.MipmapFilterMode = .nearest,
     lod_min_clamp: f32 = 0.0,
     lod_max_clamp: f32 = 0.0,
-    compare: wgpu.CompareFunction = .undef,
+    compare: wgpu.CompareFunction = .undefined,
     max_anisotropy: u16 = 0,
 };
 
@@ -1981,3 +1970,11 @@ fn formatToShaderFormat(format: wgpu.TextureFormat) []const u8 {
 //         emscripten_sleep(1);
 //     }
 // } else struct {};
+
+//
+// Section: Tests
+//
+
+test "ref_all_decls" {
+    std.testing.refAllDecls(@This());
+}

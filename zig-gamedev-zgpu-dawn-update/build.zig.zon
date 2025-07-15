@@ -1,0 +1,18 @@
+.{
+    .name = .zgpu_scratchpad,
+    .fingerprint = 0xdb947a2110aabccf,
+    .version = "0.14.0-dev",
+    .minimum_zig_version = "0.14.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "lib",
+        "src",
+    },
+    .dependencies = .{
+        .zpool = .{
+            .url = "https://github.com/zig-gamedev/zpool/archive/99a4c74ec26b1f327209782565b4adaf1c1d610f.tar.gz",
+            .hash = "zpool-0.11.0-dev-bG692eY7AQDLTkjTbgnbg_-qgjmxUCg8hNpN1kZRrIlW",
+        },
+    },
+}
