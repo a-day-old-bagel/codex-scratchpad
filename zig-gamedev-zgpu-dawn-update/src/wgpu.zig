@@ -2706,15 +2706,27 @@ fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
     // convert to snake_case -> "callback_cancelled"
     const idx = std.mem.indexOf(u8, full_field_name, "_") orelse return full_field_name;
     const suffix = full_field_name[(idx + 1)..];
+    if (std.mem.eql(u8, suffix, "WebGPU"))
+        return "webgpu";
+    if (std.mem.eql(u8, suffix, "OpenGL"))
+        return "opengl";
+    if (std.mem.eql(u8, suffix, "OpenGLES"))
+        return "opengles";
+    if (std.mem.eql(u8, suffix, "D3D11"))
+        return "d3d11";
+    if (std.mem.eql(u8, suffix, "D3D12"))
+        return "d3d12";
 
     var out_i: usize = 0;
+    var prev: u8 = 0;
     for (suffix, 0..) |chr, i| {
-        if (i > 0 and std.ascii.isUpper(chr)) {
+        if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev) or std.ascii.isDigit(prev))) {
             buf[out_i] = '_';
             out_i += 1;
         }
         buf[out_i] = std.ascii.toLower(chr);
         out_i += 1;
+        prev = chr;
     }
     return buf[0..out_i];
 }
