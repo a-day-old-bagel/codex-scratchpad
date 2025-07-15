@@ -2724,11 +2724,6 @@ fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
             }
         }
 
-        // if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev) or std.ascii.isDigit(prev))) underscore = true;
-
-        // if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev))) underscore = true;
-        // if (std.ascii.isDigit(prev)) underscore = true;
-
         if (underscore) {
             buf[out_i] = '_';
             out_i += 1;
@@ -2740,19 +2735,19 @@ fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
     return buf[0..out_i];
 }
 
-fn hardcodedNameReplacement(full_field_name: []const u8) ?[]const u8 {
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_1D")) return "tdim_1d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_2D")) return "tdim_2d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_3D")) return "tdim_3d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_1D")) return "tvdim_1d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2D")) return "tvdim_2d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2DArray")) return "tvdim_2d_array";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_Cube")) return "tvdim_cube";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_CubeArray")) return "tvdim_cube_array";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_3D")) return "tvdim_3d";
-    if (std.mem.eql(u8, full_field_name, "WGPUFeatureName_TextureCompressionBCSliced3D")) return "texture_compression_bc_sliced_3d";
-    if (std.mem.eql(u8, full_field_name, "WGPUFeatureName_TextureCompressionASTCSliced3D")) return "texture_compression_astc_sliced_3d";
-    if (std.mem.eql(u8, full_field_name, "WGPUSType_RequestAdapterWebXROptions")) return "request_adapter_webxr_options";
+fn hardcodedNameReplacement(orig: []const u8) ?[]const u8 {
+    if (std.mem.eql(u8, orig, "WGPUTextureDimension_1D")) return "tdim_1d";
+    if (std.mem.eql(u8, orig, "WGPUTextureDimension_2D")) return "tdim_2d";
+    if (std.mem.eql(u8, orig, "WGPUTextureDimension_3D")) return "tdim_3d";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_1D")) return "tvdim_1d";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_2D")) return "tvdim_2d";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_2DArray")) return "tvdim_2d_array";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_Cube")) return "tvdim_cube";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_CubeArray")) return "tvdim_cube_array";
+    if (std.mem.eql(u8, orig, "WGPUTextureViewDimension_3D")) return "tvdim_3d";
+    if (std.mem.eql(u8, orig, "WGPUFeatureName_TextureCompressionBCSliced3D")) return "texture_compression_bc_sliced_3d";
+    if (std.mem.eql(u8, orig, "WGPUFeatureName_TextureCompressionASTCSliced3D")) return "texture_compression_astc_sliced_3d";
+    if (std.mem.eql(u8, orig, "WGPUSType_RequestAdapterWebXROptions")) return "request_adapter_webxr_options";
     return null;
 }
 
