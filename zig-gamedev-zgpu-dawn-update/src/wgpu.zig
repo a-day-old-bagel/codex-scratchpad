@@ -232,10 +232,10 @@ pub const FeatureName = enum(u32) {
     depth_clip_control = 0x00000002,
     depth32_float_stencil8 = 0x00000003,
     texture_compression_bc = 0x00000004,
-    texture_compression_bcsliced3_d = 0x00000005,
+    texture_compression_bc_sliced_3d = 0x00000005,
     texture_compression_etc2 = 0x00000006,
     texture_compression_astc = 0x00000007,
-    texture_compression_astcsliced3_d = 0x00000008,
+    texture_compression_astc_sliced_3d = 0x00000008,
     timestamp_query = 0x00000009,
     indirect_first_instance = 0x0000000A,
     shader_f16 = 0x0000000B,
@@ -383,9 +383,9 @@ pub const SType = enum(u32) {
     surface_source_xlib_window = 0x00000006,
     surface_source_wayland_surface = 0x00000007,
     surface_source_android_native_window = 0x00000008,
-    surface_source_xcbwindow = 0x00000009,
+    surface_source_xcb_window = 0x00000009,
     surface_color_management = 0x0000000A,
-    request_adapter_web_xroptions = 0x0000000B,
+    request_adapter_webxr_options = 0x0000000B,
 };
 
 pub const SamplerBindingType = enum(u32) {
@@ -495,20 +495,20 @@ pub const TextureFormat = enum(u32) {
     depth24_plus_stencil8 = 0x0000002F,
     depth32_float = 0x00000030,
     depth32_float_stencil8 = 0x00000031,
-    bc1_rgbaunorm = 0x00000032,
-    bc1_rgbaunorm_srgb = 0x00000033,
-    bc2_rgbaunorm = 0x00000034,
-    bc2_rgbaunorm_srgb = 0x00000035,
-    bc3_rgbaunorm = 0x00000036,
-    bc3_rgbaunorm_srgb = 0x00000037,
-    bc4_runorm = 0x00000038,
-    bc4_rsnorm = 0x00000039,
-    bc5_rgunorm = 0x0000003A,
-    bc5_rgsnorm = 0x0000003B,
-    bc6_hrgbufloat = 0x0000003C,
-    bc6_hrgbfloat = 0x0000003D,
-    bc7_rgbaunorm = 0x0000003E,
-    bc7_rgbaunorm_srgb = 0x0000003F,
+    bc1_rgba_unorm = 0x00000032,
+    bc1_rgba_unorm_srgb = 0x00000033,
+    bc2_rgba_unorm = 0x00000034,
+    bc2_rgba_unorm_srgb = 0x00000035,
+    bc3_rgba_unorm = 0x00000036,
+    bc3_rgba_unorm_srgb = 0x00000037,
+    bc4_r_unorm = 0x00000038,
+    bc4_r_snorm = 0x00000039,
+    bc5_rg_unorm = 0x0000003A,
+    bc5_rg_snorm = 0x0000003B,
+    bc6_hrgb_ufloat = 0x0000003C,
+    bc6_hrgb_float = 0x0000003D,
+    bc7_rgba_unorm = 0x0000003E,
+    bc7_rgba_unorm_srgb = 0x0000003F,
     etc2_rgb8_unorm = 0x00000040,
     etc2_rgb8_unorm_srgb = 0x00000041,
     etc2_rgb8_a1_unorm = 0x00000042,
@@ -2705,41 +2705,31 @@ fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
     // e.g., for WGPUCreatePipelineAsyncStatus_CallbackCancelled:
     // strip prefix "WGPUCreatePipelineAsyncStatus_" -> "CallbackCancelled"
     // convert to snake_case -> "callback_cancelled"
+
+    if (hardcodedNameReplacement(full_field_name)) |replacement| return replacement;
     const idx = std.mem.indexOf(u8, full_field_name, "_") orelse return full_field_name;
     const suffix = full_field_name[(idx + 1)..];
-    if (std.mem.eql(u8, suffix, "WebGPU"))
-        return "webgpu";
-    if (std.mem.eql(u8, suffix, "OpenGL"))
-        return "opengl";
-    if (std.mem.eql(u8, suffix, "OpenGLES"))
-        return "opengles";
-    if (std.mem.eql(u8, suffix, "D3D11"))
-        return "d3d11";
-    if (std.mem.eql(u8, suffix, "D3D12"))
-        return "d3d12";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_1D"))
-        return "tdim_1d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_2D"))
-        return "tdim_2d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_3D"))
-        return "tdim_3d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_1D"))
-        return "tvdim_1d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2D"))
-        return "tvdim_2d";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2DArray"))
-        return "tvdim_2d_array";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_Cube"))
-        return "tvdim_cube";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_CubeArray"))
-        return "tvdim_cube_array";
-    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_3D"))
-        return "tvdim_3d";
+    if (hardcodedSuffixReplacement(suffix)) |replacement| return replacement;
 
     var out_i: usize = 0;
     var prev: u8 = 0;
     for (suffix, 0..) |chr, i| {
-        if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev) or std.ascii.isDigit(prev))) {
+        const maybe_next: ?u8 = if (suffix.len > i + 1) suffix[i + 1] else null;
+        var underscore = false;
+
+        if (i > 0 and std.ascii.isUpper(chr)) {
+            if (std.ascii.isLower(prev) or std.ascii.isDigit(prev)) underscore = true;
+            if (maybe_next) |next| {
+                if (std.ascii.isUpper(prev) and std.ascii.isLower(next)) underscore = true;
+            }
+        }
+
+        // if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev) or std.ascii.isDigit(prev))) underscore = true;
+
+        // if (i > 0 and std.ascii.isUpper(chr) and (std.ascii.isLower(prev))) underscore = true;
+        // if (std.ascii.isDigit(prev)) underscore = true;
+
+        if (underscore) {
             buf[out_i] = '_';
             out_i += 1;
         }
@@ -2748,4 +2738,29 @@ fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
         prev = chr;
     }
     return buf[0..out_i];
+}
+
+fn hardcodedNameReplacement(full_field_name: []const u8) ?[]const u8 {
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_1D")) return "tdim_1d";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_2D")) return "tdim_2d";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureDimension_3D")) return "tdim_3d";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_1D")) return "tvdim_1d";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2D")) return "tvdim_2d";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_2DArray")) return "tvdim_2d_array";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_Cube")) return "tvdim_cube";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_CubeArray")) return "tvdim_cube_array";
+    if (std.mem.eql(u8, full_field_name, "WGPUTextureViewDimension_3D")) return "tvdim_3d";
+    if (std.mem.eql(u8, full_field_name, "WGPUFeatureName_TextureCompressionBCSliced3D")) return "texture_compression_bc_sliced_3d";
+    if (std.mem.eql(u8, full_field_name, "WGPUFeatureName_TextureCompressionASTCSliced3D")) return "texture_compression_astc_sliced_3d";
+    if (std.mem.eql(u8, full_field_name, "WGPUSType_RequestAdapterWebXROptions")) return "request_adapter_webxr_options";
+    return null;
+}
+
+fn hardcodedSuffixReplacement(suffix: []const u8) ?[]const u8 {
+    if (std.mem.eql(u8, suffix, "WebGPU")) return "webgpu";
+    if (std.mem.eql(u8, suffix, "OpenGL")) return "opengl";
+    if (std.mem.eql(u8, suffix, "OpenGLES")) return "opengles";
+    if (std.mem.eql(u8, suffix, "D3D11")) return "d3d11";
+    if (std.mem.eql(u8, suffix, "D3D12")) return "d3d12";
+    return null;
 }
