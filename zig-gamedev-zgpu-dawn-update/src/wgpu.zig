@@ -1,26 +1,27 @@
 const std = @import("std");
 const emscripten = @import("builtin").target.os.tag == .emscripten;
 const c = @cImport(@cInclude("webgpu.h"));
+pub const slog = std.log.scoped(.wgpu);
 
 pub const Status = enum(u32) {
     success = 0x00000001,
-    err = 0x00000002,
+    @"error" = 0x00000002,
 };
 
 pub const WaitStatus = enum(u32) {
     success = 0x00000001,
     timed_out = 0x00000002,
-    err = 0x00000003,
+    @"error" = 0x00000003,
 };
 
 pub const OptionalBool = enum(u32) {
-    @"false" = 0x00000000,
-    @"true" = 0x00000001,
-    undef = 0x00000002,
+    false = 0x00000000,
+    true = 0x00000001,
+    undefined = 0x00000002,
 };
 
 pub const CallbackMode = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     wait_any_only = 0x00000001,
     allow_process_events = 0x00000002,
     allow_spontaneous = 0x00000003,
@@ -33,7 +34,7 @@ pub const InstanceFeatureName = enum(u32) {
 };
 
 pub const AdapterType = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     discrete_gpu,
     integrated_gpu,
     cpu,
@@ -41,7 +42,7 @@ pub const AdapterType = enum(u32) {
 };
 
 pub const AddressMode = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     clamp_to_edge = 0x00000001,
     repeat = 0x00000002,
     mirror_repeat = 0x00000003,
@@ -56,7 +57,7 @@ pub const CompositeAlphaMode = enum(u32) {
 };
 
 pub const BackendType = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     null,
     webgpu,
     d3d11,
@@ -69,7 +70,7 @@ pub const BackendType = enum(u32) {
 
 pub const BlendFactor = switch (emscripten) {
     true => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         zero = 0x00000001,
         one = 0x00000002,
         src = 0x00000003,
@@ -89,7 +90,7 @@ pub const BlendFactor = switch (emscripten) {
         one_minus_src1_alpha = 0x00000011,
     },
     false => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         zero = 0x00000001,
         one = 0x00000002,
         src = 0x00000003,
@@ -112,7 +113,7 @@ pub const BlendFactor = switch (emscripten) {
 
 pub const BlendOperation = switch (emscripten) {
     true => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         add = 0x00000001,
         subtract = 0x00000002,
         reverse_subtract = 0x00000003,
@@ -120,7 +121,7 @@ pub const BlendOperation = switch (emscripten) {
         max = 0x00000005,
     },
     false => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         add = 0x00000001,
         subtract = 0x00000002,
         reverse_subtract = 0x00000003,
@@ -131,7 +132,7 @@ pub const BlendOperation = switch (emscripten) {
 
 pub const BufferBindingType = enum(u32) {
     binding_not_used = 0x00000000,
-    undef = 0x00000001,
+    undefined = 0x00000001,
     uniform = 0x00000002,
     storage = 0x00000003,
     read_only_storage = 0x00000004,
@@ -140,7 +141,7 @@ pub const BufferBindingType = enum(u32) {
 pub const MapAsyncStatus = enum(u32) {
     success = 0x00000001,
     callback_cancelled = 0x00000002,
-    err = 0x00000003,
+    @"error" = 0x00000003,
     aborted = 0x00000004,
 };
 
@@ -170,7 +171,7 @@ pub const BufferMapState = switch (emscripten) {
 };
 
 pub const CompareFunction = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     never = 0x00000001,
     less = 0x00000002,
     less_equal = 0x00000003,
@@ -187,11 +188,10 @@ pub const CompilationInfoRequestStatus = enum(u32) {
 };
 
 pub const CompilationMessageType = enum(u32) {
-    err = 0x00000001,
+    @"error" = 0x00000001,
     warning = 0x00000002,
     info = 0x00000003,
 };
-
 
 pub const CreatePipelineAsyncStatus = enum(u32) {
     success = 0x00000001,
@@ -200,16 +200,14 @@ pub const CreatePipelineAsyncStatus = enum(u32) {
     internal_error = 0x00000004,
 };
 
-
 pub const CullMode = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     none = 0x00000001,
     front = 0x00000002,
     back = 0x00000003,
 };
 
 pub const DeviceLostReason = enum(u32) {
-    // undef = 0x00000000,
     unknown = 0x00000001,
     destroyed = 0x00000002,
     callback_cancelled = 0x00000003,
@@ -231,7 +229,7 @@ pub const ErrorType = enum(u32) {
 };
 
 pub const FeatureLevel = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     compatibility = 0x00000001,
     core = 0x00000002,
 };
@@ -260,39 +258,37 @@ pub const FeatureName = enum(u32) {
 };
 
 pub const FilterMode = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     nearest = 0x00000001,
     linear = 0x00000002,
 };
 
 pub const MipmapFilterMode = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     nearest = 0x00000001,
     linear = 0x00000002,
 };
 
 pub const FrontFace = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     ccw = 0x00000001,
     cw = 0x00000002,
 };
 
 pub const IndexFormat = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     uint16 = 0x00000001,
     uint32 = 0x00000002,
 };
 
 pub const LoadOp = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     load = 0x00000001,
     clear = 0x00000002,
 };
 
-
-
 pub const PowerPreference = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     low_power = 0x00000001,
     high_performance = 0x00000002,
 };
@@ -331,21 +327,20 @@ pub const QueryType = enum(u32) {
 pub const QueueWorkDoneStatus = enum(u32) {
     success = 0x00000001,
     callback_cancelled = 0x00000002,
-    err = 0x00000003,
+    @"error" = 0x00000003,
 };
-
 
 pub const RequestAdapterStatus = enum(u32) {
     success = 0x00000001,
     callback_cancelled = 0x00000002,
     unavailable = 0x00000003,
-    err = 0x00000004,
+    @"error" = 0x00000004,
 };
 
 pub const RequestDeviceStatus = enum(u32) {
     success = 0x00000001,
     callback_cancelled = 0x00000002,
-    err = 0x00000003,
+    @"error" = 0x00000003,
 };
 
 pub const SurfaceGetCurrentTextureStatus = enum(u32) {
@@ -354,7 +349,7 @@ pub const SurfaceGetCurrentTextureStatus = enum(u32) {
     timeout = 0x00000003,
     outdated = 0x00000004,
     lost = 0x00000005,
-    err = 0x00000006,
+    @"error" = 0x00000006,
 };
 
 pub const SurfaceSourceMetalLayer = extern struct {
@@ -411,14 +406,14 @@ pub const SType = enum(u32) {
 
 pub const SamplerBindingType = enum(u32) {
     binding_not_used = 0x00000000,
-    undef = 0x00000001,
+    undefined = 0x00000001,
     filtering = 0x00000002,
     non_filtering = 0x00000003,
     comparison = 0x00000004,
 };
 
 pub const StencilOperation = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     keep = 0x00000001,
     zero = 0x00000002,
     replace = 0x00000003,
@@ -431,20 +426,20 @@ pub const StencilOperation = enum(u32) {
 
 pub const StorageTextureAccess = enum(u32) {
     binding_not_used = 0x00000000,
-    undef = 0x00000001,
+    undefined = 0x00000001,
     write_only = 0x00000002,
     read_only = 0x00000003,
     read_write = 0x00000004,
 };
 
 pub const StoreOp = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     store = 0x00000001,
     discard = 0x00000002,
 };
 
 pub const TextureAspect = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     all = 0x00000001,
     stencil_only = 0x00000002,
     depth_only = 0x00000003,
@@ -452,13 +447,13 @@ pub const TextureAspect = enum(u32) {
 
 pub const TextureDimension = switch (emscripten) {
     true => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         tdim_1d = 0x00000001,
         tdim_2d = 0x00000002,
         tdim_3d = 0x00000003,
     },
     false => enum(u32) {
-        undef = 0x00000000,
+        undefined = 0x00000000,
         tdim_1d = 0x00000001,
         tdim_2d = 0x00000002,
         tdim_3d = 0x00000003,
@@ -466,7 +461,7 @@ pub const TextureDimension = switch (emscripten) {
 };
 
 pub const TextureFormat = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     r8_unorm = 0x00000001,
     r8_snorm = 0x00000002,
     r8_uint = 0x00000003,
@@ -566,7 +561,7 @@ pub const TextureFormat = enum(u32) {
 
 pub const TextureSampleType = enum(u32) {
     binding_not_used = 0x00000000,
-    undef = 0x00000001,
+    undefined = 0x00000001,
     float = 0x00000002,
     unfilterable_float = 0x00000003,
     depth = 0x00000004,
@@ -575,7 +570,7 @@ pub const TextureSampleType = enum(u32) {
 };
 
 pub const TextureViewDimension = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     tvdim_1d = 0x00000001,
     tvdim_2d = 0x00000002,
     tvdim_2d_array = 0x00000003,
@@ -585,7 +580,7 @@ pub const TextureViewDimension = enum(u32) {
 };
 
 pub const VertexFormat = enum(u32) {
-    undef = 0x00000000,
+    undefined = 0x00000000,
     uint8x2 = 0x00000001,
     uint8x4 = 0x00000002,
     sint8x2 = 0x00000003,
@@ -618,17 +613,10 @@ pub const VertexFormat = enum(u32) {
     sint32x4 = 0x0000001E,
 };
 
-pub const VertexStepMode = switch (emscripten) {
-    true => enum(u32) {
-        undef = 0x00000000,
-        vertex = 0x00000001,
-        instance = 0x00000002,
-    },
-    false => enum(u32) {
-        undef = 0x00000000,
-        vertex = 0x00000001,
-        instance = 0x00000002,
-    },
+pub const VertexStepMode = enum(u32) {
+    undefined = 0x00000000,
+    vertex = 0x00000001,
+    instance = 0x00000002,
 };
 
 pub const Flags = u64;
@@ -701,7 +689,7 @@ pub const ChainedStruct = extern struct {
 pub const ChainedStructOut = extern struct {
     next: ?*ChainedStructOut,
     struct_type: SType,
-    pub const skip_abi_compat = true;
+    const _skip_abi_compat = true;
 };
 
 pub const StringView = extern struct {
@@ -733,7 +721,7 @@ pub const AdapterInfo = extern struct {
     architecture: c.WGPUStringView = .{},
     device: c.WGPUStringView = .{},
     description: c.WGPUStringView = .{},
-    backend_type: BackendType = .undef,
+    backend_type: BackendType = .undefined,
     adapter_type: AdapterType = .unknown,
     vendor_id: u32 = 0,
     device_id: u32 = 0,
@@ -743,7 +731,7 @@ pub const AdapterInfo = extern struct {
 
 pub const RequestAdapterCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?RequestAdapterCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -751,7 +739,7 @@ pub const RequestAdapterCallbackInfo = extern struct {
 
 pub const RequestDeviceCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?RequestDeviceCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -759,7 +747,7 @@ pub const RequestDeviceCallbackInfo = extern struct {
 
 pub const DeviceLostCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?DeviceLostCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -774,7 +762,7 @@ pub const UncapturedErrorCallbackInfo = extern struct {
 
 pub const BufferMapCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?BufferMapCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -782,7 +770,7 @@ pub const BufferMapCallbackInfo = extern struct {
 
 pub const CreateComputePipelineAsyncCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?CreateComputePipelineAsyncCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -790,7 +778,7 @@ pub const CreateComputePipelineAsyncCallbackInfo = extern struct {
 
 pub const CreateRenderPipelineAsyncCallbackInfo = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    mode: CallbackMode = .undef,
+    mode: CallbackMode = .undefined,
     callback: ?CreateRenderPipelineAsyncCallback = null,
     userdata_1: ?*anyopaque = null,
     userdata_2: ?*anyopaque = null,
@@ -850,10 +838,13 @@ pub const BindGroupLayoutEntry = extern struct {
     binding: u32,
     visibility: ShaderStage,
     binding_array_size: u32 = 0,
-    buffer: BufferBindingLayout = .{ .binding_type = .undef },
-    sampler: SamplerBindingLayout = .{ .binding_type = .undef },
-    texture: TextureBindingLayout = .{ .sample_type = .undef },
-    storage_texture: StorageTextureBindingLayout = .{ .access = .undef, .format = .undef },
+    buffer: BufferBindingLayout = .{ .binding_type = .undefined },
+    sampler: SamplerBindingLayout = .{ .binding_type = .undefined },
+    texture: TextureBindingLayout = .{ .sample_type = .undefined },
+    storage_texture: StorageTextureBindingLayout = .{
+        .access = .undefined,
+        .format = .undefined,
+    },
 };
 
 pub const BindGroupLayoutDescriptor = extern struct {
@@ -862,7 +853,6 @@ pub const BindGroupLayoutDescriptor = extern struct {
     entry_count: usize,
     entries: ?[*]const BindGroupLayoutEntry,
 };
-
 
 pub const BufferDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -897,7 +887,6 @@ pub const ComputePipelineDescriptor = extern struct {
     layout: ?PipelineLayout = null,
     compute: ComputeState,
 };
-
 
 pub const PipelineLayoutDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -981,7 +970,7 @@ pub const FragmentState = extern struct {
 pub const PrimitiveState = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     topology: PrimitiveTopology = .triangle_list,
-    strip_index_format: IndexFormat = .undef,
+    strip_index_format: IndexFormat = .undefined,
     front_face: FrontFace = .ccw,
     cull_mode: CullMode = .none,
     unclipped_depth: c.WGPUBool = c.WGPU_FALSE,
@@ -997,7 +986,7 @@ pub const StencilFaceState = extern struct {
 pub const DepthStencilState = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     format: TextureFormat,
-    depth_write_enabled: OptionalBool = .undef,
+    depth_write_enabled: OptionalBool = .undefined,
     depth_compare: CompareFunction = .always,
     stencil_front: StencilFaceState = .{},
     stencil_back: StencilFaceState = .{},
@@ -1037,7 +1026,7 @@ pub const SamplerDescriptor = extern struct {
     mipmap_filter: MipmapFilterMode = .nearest,
     lod_min_clamp: f32 = 0.0,
     lod_max_clamp: f32 = 32.0,
-    compare: CompareFunction = .undef,
+    compare: CompareFunction = .undefined,
     max_anisotropy: u16 = 1,
 };
 
@@ -1069,7 +1058,6 @@ pub const SurfaceTexture = extern struct {
     texture: ?Texture = null,
     status: SurfaceGetCurrentTextureStatus = .success_optimal,
 };
-
 
 pub const Extent3D = extern struct {
     width: u32,
@@ -1129,12 +1117,10 @@ pub const Limits = extern struct {
     max_immediate_size: u32 = u32_undefined,
 };
 
-
 pub const InstanceLimits = extern struct {
     next_in_chain: ?*ChainedStructOut = null,
     timed_wait_any_max_count: usize,
 };
-
 
 pub const InstanceDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1142,7 +1128,6 @@ pub const InstanceDescriptor = extern struct {
     required_features: ?*const InstanceFeatureName = null,
     required_limits: ?*const InstanceLimits = null,
 };
-
 
 pub const QueueDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1167,10 +1152,10 @@ pub const SurfaceDescriptor = extern struct {
 
 pub const RequestAdapterOptions = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
-    feature_level: FeatureLevel = .undef,
-    power_preference: PowerPreference = .undef,
+    feature_level: FeatureLevel = .undefined,
+    power_preference: PowerPreference = .undefined,
     force_fallback_adapter: c.WGPUBool = c.WGPU_FALSE,
-    backend_type: BackendType = .undef,
+    backend_type: BackendType = .undefined,
     compatible_surface: ?Surface = null,
 };
 
@@ -1182,7 +1167,6 @@ pub const PassTimestampWrites = extern struct {
     beginning_of_pass_write_index: u32 = query_set_index_undefined,
     end_of_pass_write_index: u32 = query_set_index_undefined,
 };
-
 
 pub const ComputePassDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
@@ -1221,12 +1205,12 @@ pub const RenderPassColorAttachment = switch (emscripten) {
 pub const RenderPassDepthStencilAttachment = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     view: TextureView,
-    depth_load_op: LoadOp = .undef,
-    depth_store_op: StoreOp = .undef,
+    depth_load_op: LoadOp = .undefined,
+    depth_store_op: StoreOp = .undefined,
     depth_clear_value: f32 = 0.0,
     depth_read_only: c.WGPUBool = c.WGPU_FALSE,
-    stencil_load_op: LoadOp = .undef,
-    stencil_store_op: StoreOp = .undef,
+    stencil_load_op: LoadOp = .undefined,
+    stencil_store_op: StoreOp = .undefined,
     stencil_clear_value: u32 = 0,
     stencil_read_only: c.WGPUBool = c.WGPU_FALSE,
 };
@@ -1265,7 +1249,6 @@ pub const TexelCopyTextureInfo = extern struct {
     aspect: TextureAspect = .all,
 };
 
-
 pub const CommandBufferDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     label: c.WGPUStringView = StringView.initC(),
@@ -1286,8 +1269,8 @@ pub const CommandBufferDescriptor = extern struct {
 pub const TextureViewDescriptor = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     label: c.WGPUStringView = StringView.initC(),
-    format: TextureFormat = .undef,
-    dimension: TextureViewDimension = .undef,
+    format: TextureFormat = .undefined,
+    dimension: TextureViewDimension = .undefined,
     base_mip_level: u32 = 0,
     mip_level_count: u32 = 0xffff_ffff,
     base_array_layer: u32 = 0,
@@ -1339,7 +1322,6 @@ pub const ErrorCallback = *const fn (
     userdata_1: ?*anyopaque,
     userdata_2: ?*anyopaque,
 ) callconv(.C) void;
-
 
 pub const DeviceLostCallback = *const fn (
     device: *const Device,
@@ -2560,125 +2542,48 @@ pub const TextureView = *opaque {
     }
 };
 
-// test "extern struct ABI compatibility" {
-//     @setEvalBranchQuota(10_000);
-//     inline for (comptime std.meta.declarations(@This())) |decl| {
-//         const ZigStruct = @field(@This(), decl.name);
-//         if (@TypeOf(ZigStruct) != type) continue;
-//         const type_info = @typeInfo(ZigStruct);
-//         if (comptime std.meta.activeTag(type_info) != .@"struct") continue;
-//         if (type_info.@"struct".layout != .@"extern") continue;
-//         if (@hasDecl(ZigStruct, "skip_abi_compat")) continue;
+//
+// Section: Tests
+//
 
-//         const wgpu_name = "WGPU" ++ decl.name;
-//         std.log.info("ABI Checking {s} ~= {s}", .{ wgpu_name, decl.name });
-//         const CType = @field(c, wgpu_name);
-
-//         std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigStruct)) catch |err| {
-//             std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ wgpu_name, decl.name });
-//             return err;
-//         };
-
-//         std.testing.expectEqual(std.meta.fields(CType).len, std.meta.fields(ZigStruct).len) catch |err| {
-//             std.log.err("std.meta.fields({s}).len != std.meta.fields({s}).len", .{ wgpu_name, decl.name });
-//             return err;
-//         };
-
-//         inline for (comptime std.meta.fieldNames(CType), 0..) |c_field_name, i| {
-//             std.testing.expectEqual(
-//                 @offsetOf(CType, c_field_name),
-//                 @offsetOf(ZigStruct, std.meta.fieldNames(ZigStruct)[i]),
-//             ) catch |err| {
-//                 std.log.err(
-//                     "@offsetOf({s}, {s}) != @offsetOf({s}, {s})",
-//                     .{ wgpu_name, c_field_name, decl.name, std.meta.fieldNames(ZigStruct)[i] },
-//                 );
-//                 return err;
-//             };
-//         }
-//     }
-// }
-
-// test "extern struct ABI compatibility" {
-//     @setEvalBranchQuota(10_000);
-
-//     inline for (comptime std.meta.declarations(@This())) |decl| {
-//         const ZigStruct = @field(@This(), decl.name);
-//         if (@TypeOf(ZigStruct) != type) continue;
-//         if (comptime std.meta.activeTag(@typeInfo(ZigStruct)) != .@"struct") continue;
-//         if (@typeInfo(ZigStruct).@"struct".layout != .@"extern") continue;
-//         if (@hasDecl(ZigStruct, "skip_abi_compat")) continue;
-
-//         const wgpu_name = "WGPU" ++ decl.name;
-//         std.log.info("ABI Checking {s} ~= {s}", .{ wgpu_name, decl.name });
-//         std.testing.expect(@hasField(c, wgpu_name)) catch |err| {
-//             std.log.err("No such C type: {s}", .{wgpu_name});
-//             return err;
-//         };
-//         const CType = @field(c, wgpu_name);
-
-//         std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigStruct)) catch |err| {
-//             std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ wgpu_name, decl.name });
-//             return err;
-//         };
-
-//         const zig_fields = std.meta.fields(ZigStruct);
-//         const c_fields = std.meta.fields(CType);
-
-//         std.testing.expectEqual(c_fields.len, zig_fields.len) catch |err| {
-//             std.log.err(
-//                 "Field count mismatch: {s} has {d}, but {s} has {d}",
-//                 .{ wgpu_name, c_fields.len, decl.name, zig_fields.len },
-//             );
-//             return err;
-//         };
-
-//         inline for (zig_fields, 0..) |zig_f, i| {
-//             const c_f = c_fields[i];
-//             std.testing.expectEqual(
-//                 @offsetOf(CType, c_f.name),
-//                 @offsetOf(ZigStruct, zig_f.name),
-//             ) catch |err| {
-//                 std.log.err(
-//                     "Offset mismatch at index {d}: C.{s} vs Zig.{s}",
-//                     .{ i, c_f.name, zig_f.name },
-//                 );
-//                 return err;
-//             };
-//         }
-//     }
-// }
+const c_prefix = "WGPU";
+const max_supported_enum_name_len = 128;
 
 test "extern struct ABI compatibility" {
     @setEvalBranchQuota(10_000);
+    std.testing.log_level = std.log.Level.debug;
+    slog.info("checking struct ABI compatibility...", .{});
 
     inline for (comptime std.meta.declarations(@This())) |decl| {
         const ZigStruct = @field(@This(), decl.name);
         if (@TypeOf(ZigStruct) != type) continue;
         if (comptime std.meta.activeTag(@typeInfo(ZigStruct)) != .@"struct") continue;
         if (@typeInfo(ZigStruct).@"struct".layout != .@"extern") continue;
-        if (@hasDecl(ZigStruct, "skip_abi_compat")) continue;
-        const wgpu_name = "WGPU" ++ decl.name;
+        if (@hasDecl(ZigStruct, "_skip_abi_compat")) continue;
+        const c_name = c_prefix ++ decl.name;
 
         // Existence check - if the zig source still declares a struct that no longer
         // exists in the C header, the tests will fail to compile
-        const CType = comptime blk: {
-            break :blk @field(c, wgpu_name);
+        const CStruct = comptime blk: {
+            if (!@hasDecl(c, c_name)) {
+                @compileError("Missing C struct " ++ c_name ++ " to match " ++ decl.name ++
+                    ". Declare a const _skip_abi_compat inside " ++ decl.name ++ " to exclude.");
+            } else break :blk @field(c, c_name);
         };
 
         // Size check
-        std.testing.expectEqual(@sizeOf(CType), @sizeOf(ZigStruct)) catch |err| {
-            std.log.err("@sizeOf({s}) != @sizeOf({s})", .{ wgpu_name, decl.name });
+        std.testing.expectEqual(@sizeOf(CStruct), @sizeOf(ZigStruct)) catch |err| {
+            slog.err("@sizeOf({s}) != @sizeOf({s})", .{ c_name, decl.name });
             return err;
         };
 
         // Field‑count check
         const zig_fields = std.meta.fields(ZigStruct);
-        const c_fields = std.meta.fields(CType);
+        const c_fields = std.meta.fields(CStruct);
         if (c_fields.len != zig_fields.len) {
-            std.log.err(
+            slog.err(
                 "Field count mismatch: C `{s}` has {d} fields, Zig `{s}` has {d}",
-                .{ wgpu_name, c_fields.len, decl.name, zig_fields.len },
+                .{ c_name, c_fields.len, decl.name, zig_fields.len },
             );
             continue;
         }
@@ -2689,70 +2594,119 @@ test "extern struct ABI compatibility" {
             const zig_f = zig_fields[i];
             const c_f = c_fields[i];
             std.testing.expectEqual(
-                @offsetOf(CType, c_f.name),
+                @offsetOf(CStruct, c_f.name),
                 @offsetOf(ZigStruct, zig_f.name),
             ) catch |err| {
-                std.log.err(
+                slog.err(
                     "Offset mismatch at index {d}: C.{s} vs Zig.{s}",
                     .{ i, c_f.name, zig_f.name },
                 );
                 return err;
             };
         }
+
+        slog.debug("\tchecked {s} == {s}", .{ c_name, decl.name });
     }
 }
 
-test "extern enum ABI compatibility" {
-    @setEvalBranchQuota(10_000);
+test "enum ABI compatibility" {
+    @setEvalBranchQuota(100_000_000);
+    std.testing.log_level = std.log.Level.debug;
+    slog.info("checking enum ABI compatibility...", .{});
+
+    const c_import_decls = comptime blk: {
+        break :blk std.meta.declarations(c);
+    };
+
     inline for (comptime std.meta.declarations(@This())) |decl| {
         const ZigEnum = @field(@This(), decl.name);
         if (@TypeOf(ZigEnum) != type) continue;
-        const type_info = @typeInfo(ZigEnum);
-        if (comptime std.meta.activeTag(type_info) != .@"enum") continue;
+        if (comptime std.meta.activeTag(@typeInfo(ZigEnum)) != .@"enum") continue;
 
-        const c_name = "WGPU" ++ decl.name;
-        const CType = @field(c, c_name);
-        const c_info = @typeInfo(CType);
-        if (c_info != .@"enum") continue;
-
-        std.testing.expectEqual(c_info.Enum.tag_type, type_info.Enum.tag_type) catch |err| {
-            std.log.err("enum tag type mismatch for {s}", .{decl.name});
-            return err;
+        const z_int_type = @typeInfo(ZigEnum).@"enum".tag_type;
+        const z_int_bits = @typeInfo(z_int_type).int.bits;
+        const z_int_sign = @typeInfo(z_int_type).int.signedness;
+        const c_name = c_prefix ++ decl.name;
+        const c_e_name = "enum_" ++ c_name;
+        const CEnum = comptime blk: {
+            if (!@hasDecl(c, c_e_name)) {
+                @compileError("Missing C enum " ++ c_name ++ " to match " ++ decl.name);
+            } else if (std.meta.activeTag(@typeInfo(@field(c, c_e_name))) != .int) {
+                @compileError("Expected " ++ c_name ++ " to be an enum with inter type.");
+            } else if (@typeInfo(@field(c, c_e_name)).int.bits != z_int_bits) {
+                @compileError("Expected " ++ c_name ++ " to be an enum with int type " ++
+                    " having " ++ z_int_bits ++ " bits, but found " ++
+                    @typeInfo(@field(c, c_e_name)).int.bits ++ " bits instead.");
+            } else if (@typeInfo(@field(c, c_e_name)).int.signedness != z_int_sign) {
+                @compileError("Expected " ++ c_name ++ " to be an enum with " ++
+                    @tagName(z_int_sign) ++ " int type, but found " ++
+                    @tagName(@typeInfo(@field(c, c_e_name)).int.signedness) ++ " int instead.");
+            } else {
+                var enum_fields: [c_import_decls.len]std.builtin.Type.EnumField = undefined;
+                var empty_decls = [_]std.builtin.Type.Declaration{};
+                var enum_i: usize = 0;
+                for (c_import_decls) |c_decl| {
+                    if (!std.mem.startsWith(u8, c_decl.name, c_name ++ "_")) continue;
+                    const c_field = @field(c, c_decl.name);
+                    if (std.meta.activeTag(@typeInfo(@TypeOf(c_field))) != .int) continue;
+                    enum_fields[enum_i] = .{
+                        .name = c_decl.name,
+                        .value = c_field,
+                    };
+                    enum_i += 1;
+                }
+                break :blk @Type(.{
+                    .@"enum" = .{
+                        .tag_type = z_int_type,
+                        .fields = enum_fields[0..enum_i],
+                        .decls = &empty_decls,
+                        .is_exhaustive = true,
+                    },
+                });
+            }
         };
 
-        comptime var matched_count: usize = 0;
-        inline for (c_info.Enum.fields) |c_field| {
-            const short_name = normalizeCEnumField(c_field.name);
+        const zig_fields = std.meta.fields(ZigEnum);
+        const c_fields = std.meta.fields(CEnum);
+
+        inline for (c_fields) |c_field| {
+            const short_name = comptime blk: {
+                var str_buf: [max_supported_enum_name_len]u8 = undefined;
+                const normalized = normalizeCEnumField(c_field.name, str_buf[0..]);
+                break :blk std.fmt.comptimePrint("{s}", .{normalized});
+            };
 
             if (std.meta.fieldIndex(ZigEnum, short_name)) |i| {
-                const zig_field = type_info.Enum.fields[i];
+                const zig_field = zig_fields[i];
                 const zig_val = @intFromEnum(@field(ZigEnum, zig_field.name));
                 if (zig_val != c_field.value) {
-                    std.log.err(
-                        "enum mismatch: {s} ({s}) = {}, but Zig has {}",
-                        .{ c_field.name, short_name, c_field.value, zig_val },
+                    slog.err(
+                        "enum value mismatch: {s} == {}, but {s}.{s} == {}",
+                        .{ c_field.name, c_field.value, decl.name, short_name, zig_val },
                     );
                     return error.EnumValueMismatch;
                 }
-                matched_count += 1;
             } else {
                 if (!std.mem.endsWith(u8, c_field.name, "Force32")) {
-                    std.log.err("missing Zig field for {s} ({s})", .{ c_field.name, short_name });
+                    slog.err("missing Zig field for {s} ({s}.{s})", .{
+                        c_field.name, decl.name, short_name,
+                    });
                     return error.EnumFieldMissing;
                 }
             }
+
+            slog.debug("\tchecked {s} == {s}.{s}", .{ c_field.name, decl.name, short_name });
         }
     }
 }
 
-fn normalizeCEnumField(full_field_name: []const u8) []const u8 {
+fn normalizeCEnumField(full_field_name: []const u8, buf: []u8) []const u8 {
     // e.g., for WGPUCreatePipelineAsyncStatus_CallbackCancelled:
     // strip prefix "WGPUCreatePipelineAsyncStatus_" -> "CallbackCancelled"
     // convert to snake_case -> "callback_cancelled"
     const idx = std.mem.indexOf(u8, full_field_name, "_") orelse return full_field_name;
     const suffix = full_field_name[(idx + 1)..];
 
-    var buf: [128]u8 = undefined;
     var out_i: usize = 0;
     for (suffix, 0..) |chr, i| {
         if (i > 0 and std.ascii.isUpper(chr)) {
