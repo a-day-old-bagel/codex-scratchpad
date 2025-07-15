@@ -11,6 +11,7 @@ const assert = std.debug.assert;
 const wgsl = @import("common_wgsl.zig");
 const zgpu_options = @import("zgpu_options");
 pub const wgpu = @import("wgpu.zig");
+const c = @cImport(@cInclude("webgpu.h"));
 pub const slog = std.log.scoped(.zgpu); // scoped log that can be comptime processed in main logger
 // const emscripten = @import("builtin").target.os.tag == .emscripten;
 
@@ -73,7 +74,12 @@ pub const WindowProvider = struct {
 pub const GraphicsContextOptions = struct {
     present_mode: wgpu.PresentMode = .fifo,
     required_features: []const wgpu.FeatureName = &.{},
-    required_limits: ?*const wgpu.RequiredLimits = null,
+    /// Optional set of limits requested when creating the device.
+    ///
+    /// Older versions of zgpu used `wgpu.RequiredLimits` which wrapped
+    /// `wgpu.Limits`.  The upstream API has since dropped that wrapper, so we
+    /// now pass the limits structure directly.
+    required_limits: ?*const wgpu.Limits = null,
 };
 
 pub const GraphicsContext = struct {
@@ -277,7 +283,7 @@ pub const GraphicsContext = struct {
                 // .next_in_chain = @ptrCast(&dawn_toggles),
                 .required_features_count = options.required_features.len,
                 .required_features = options.required_features.ptr,
-                .required_limits = @ptrCast(options.required_limits),
+                .required_limits = options.required_limits,
                 .device_lost_callback_info = .{
                     .mode = .allow_spontaneous,
                     .callback = device_lost_callback,
@@ -735,9 +741,10 @@ pub const GraphicsContext = struct {
             status: wgpu.CreatePipelineAsyncStatus,
             pipeline: wgpu.RenderPipeline,
             message: wgpu.StringView.C,
-            userdata: ?*anyopaque,
+            userdata_1: ?*anyopaque,
+            _: ?*anyopaque,
         ) callconv(.C) void {
-            const op = @as(*AsyncCreateOpRender, @ptrCast(@alignCast(userdata)));
+            const op = @as(*AsyncCreateOpRender, @ptrCast(@alignCast(userdata_1)));
             if (status == .success) {
                 op.result.* = op.gctx.render_pipeline_pool.addResource(
                     op.gctx.*,
@@ -770,7 +777,13 @@ pub const GraphicsContext = struct {
             .pipeline_layout = pipeline_layout,
             .allocator = allocator,
         };
-        gctx.device.createRenderPipelineAsync(desc, AsyncCreateOpRender.create, @ptrCast(op));
+        const callback_info = wgpu.CreateRenderPipelineAsyncCallbackInfo{
+            .mode = .wait_any_only,
+            .callback = AsyncCreateOpRender.create,
+            .userdata_1 = @ptrCast(op),
+            .userdata_2 = null,
+        };
+        _ = gctx.device.createRenderPipelineAsync(desc, callback_info);
     }
 
     pub fn createComputePipeline(
@@ -796,9 +809,10 @@ pub const GraphicsContext = struct {
             status: wgpu.CreatePipelineAsyncStatus,
             pipeline: wgpu.ComputePipeline,
             message: wgpu.StringView.C,
-            userdata: ?*anyopaque,
+            userdata_1: ?*anyopaque,
+            _: ?*anyopaque,
         ) callconv(.C) void {
-            const op = @as(*AsyncCreateOpCompute, @ptrCast(@alignCast(userdata)));
+            const op = @as(*AsyncCreateOpCompute, @ptrCast(@alignCast(userdata_1)));
             if (status == .success) {
                 op.result.* = op.gctx.compute_pipeline_pool.addResource(
                     op.gctx.*,
@@ -831,7 +845,13 @@ pub const GraphicsContext = struct {
             .pipeline_layout = pipeline_layout,
             .allocator = allocator,
         };
-        gctx.device.createComputePipelineAsync(desc, AsyncCreateOpCompute.create, @ptrCast(op));
+        const callback_info = wgpu.CreateComputePipelineAsyncCallbackInfo{
+            .mode = .wait_any_only,
+            .callback = AsyncCreateOpCompute.create,
+            .userdata_1 = @ptrCast(op),
+            .userdata_2 = null,
+        };
+        _ = gctx.device.createComputePipelineAsync(desc, callback_info);
     }
 
     pub fn createBindGroup(
@@ -1240,10 +1260,10 @@ pub fn bufferEntry(
         .visibility = visibility,
         .buffer = .{
             .binding_type = binding_type,
-            .has_dynamic_offset = switch (has_dynamic_offset) {
-                true => .true,
-                false => .false,
-            },
+            .has_dynamic_offset = if (has_dynamic_offset)
+                c.WGPU_TRUE
+            else
+                c.WGPU_FALSE,
             .min_binding_size = min_binding_size,
         },
     };
@@ -1276,7 +1296,10 @@ pub fn textureEntry(
         .texture = .{
             .sample_type = sample_type,
             .view_dimension = view_dimension,
-            .multisampled = multisampled,
+            .multisampled = if (multisampled)
+                c.WGPU_TRUE
+            else
+                c.WGPU_FALSE,
         },
     };
 }
