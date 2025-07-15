@@ -2070,7 +2070,11 @@ pub const Queue = *opaque {
     }
 
     pub fn submit(queue: Queue, commands: []const CommandBuffer) void {
-        c.wgpuQueueSubmit(@ptrCast(queue), @as(u32, @intCast(commands.len)), commands.ptr);
+        c.wgpuQueueSubmit(
+            @ptrCast(queue),
+            @as(usize, @intCast(commands.len)),
+            @ptrCast(commands.ptr),
+        );
     }
 
     pub fn writeBuffer(
