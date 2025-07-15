@@ -13,6 +13,12 @@ pub const WaitStatus = enum(u32) {
     err = 0x00000003,
 };
 
+pub const OptionalBool = enum(u32) {
+    @"false" = 0x00000000,
+    @"true" = 0x00000001,
+    undef = 0x00000002,
+};
+
 pub const CallbackMode = enum(u32) {
     undef = 0x00000000,
     wait_any_only = 0x00000001,
@@ -684,7 +690,7 @@ pub const Future = extern struct {
 
 pub const FutureWaitInfo = extern struct {
     future: Future = .{},
-    completed: bool = false,
+    completed: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const ChainedStruct = extern struct {
@@ -816,7 +822,7 @@ pub const BindGroupDescriptor = extern struct {
 pub const BufferBindingLayout = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     binding_type: BufferBindingType = .uniform,
-    has_dynamic_offset: bool = false,
+    has_dynamic_offset: c.WGPUBool = c.WGPU_FALSE,
     min_binding_size: u64 = 0,
 };
 
@@ -829,7 +835,7 @@ pub const TextureBindingLayout = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     sample_type: TextureSampleType = .float,
     view_dimension: TextureViewDimension = .tvdim_2d,
-    multisampled: bool = false,
+    multisampled: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const StorageTextureBindingLayout = extern struct {
@@ -843,6 +849,7 @@ pub const BindGroupLayoutEntry = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     binding: u32,
     visibility: ShaderStage,
+    binding_array_size: u32 = 0,
     buffer: BufferBindingLayout = .{ .binding_type = .undef },
     sampler: SamplerBindingLayout = .{ .binding_type = .undef },
     texture: TextureBindingLayout = .{ .sample_type = .undef },
@@ -862,7 +869,7 @@ pub const BufferDescriptor = extern struct {
     label: c.WGPUStringView = StringView.initC(),
     usage: BufferUsage,
     size: u64,
-    mapped_at_creation: bool = false,
+    mapped_at_creation: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const CommandEncoderDescriptor = extern struct {
@@ -897,6 +904,7 @@ pub const PipelineLayoutDescriptor = extern struct {
     label: c.WGPUStringView = StringView.initC(),
     bind_group_layout_count: usize,
     bind_group_layouts: ?[*]const BindGroupLayout,
+    immediate_size: u32 = 0,
 };
 
 pub const QuerySetDescriptor = extern struct {
@@ -913,21 +921,23 @@ pub const RenderBundleEncoderDescriptor = extern struct {
     color_formats: ?[*]const TextureFormat,
     depth_stencil_format: TextureFormat,
     sample_count: u32,
-    depth_read_only: bool,
-    stencil_read_only: bool,
+    depth_read_only: c.WGPUBool = c.WGPU_FALSE,
+    stencil_read_only: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const VertexAttribute = extern struct {
+    next_in_chain: ?*const ChainedStruct = null,
     format: VertexFormat,
     offset: u64,
     shader_location: u32,
 };
 
 pub const VertexBufferLayout = extern struct {
-    array_stride: u64,
+    next_in_chain: ?*const ChainedStruct = null,
     step_mode: VertexStepMode = .vertex,
+    array_stride: u64,
     attribute_count: usize,
-    attributes: [*]const VertexAttribute,
+    attributes: ?[*]const VertexAttribute = null,
 };
 
 pub const VertexState = extern struct {
@@ -974,6 +984,7 @@ pub const PrimitiveState = extern struct {
     strip_index_format: IndexFormat = .undef,
     front_face: FrontFace = .ccw,
     cull_mode: CullMode = .none,
+    unclipped_depth: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const StencilFaceState = extern struct {
@@ -986,7 +997,7 @@ pub const StencilFaceState = extern struct {
 pub const DepthStencilState = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     format: TextureFormat,
-    depth_write_enabled: bool = false,
+    depth_write_enabled: OptionalBool = .undef,
     depth_compare: CompareFunction = .always,
     stencil_front: StencilFaceState = .{},
     stencil_back: StencilFaceState = .{},
@@ -1001,7 +1012,7 @@ pub const MultisampleState = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     count: u32 = 1,
     mask: u32 = 0xffff_ffff,
-    alpha_to_coverage_enabled: bool = false,
+    alpha_to_coverage_enabled: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const RenderPipelineDescriptor = extern struct {
@@ -1158,7 +1169,7 @@ pub const RequestAdapterOptions = extern struct {
     next_in_chain: ?*const ChainedStruct = null,
     feature_level: FeatureLevel = .undef,
     power_preference: PowerPreference = .undef,
-    force_fallback_adapter: bool = false,
+    force_fallback_adapter: c.WGPUBool = c.WGPU_FALSE,
     backend_type: BackendType = .undef,
     compatible_surface: ?Surface = null,
 };
@@ -1199,6 +1210,7 @@ pub const RenderPassColorAttachment = switch (emscripten) {
     false => extern struct {
         next_in_chain: ?*const ChainedStruct = null,
         view: ?TextureView,
+        depth_slice: u32 = std.math.maxInt(u32),
         resolve_target: ?TextureView = null,
         load_op: LoadOp,
         store_op: StoreOp,
@@ -1207,15 +1219,16 @@ pub const RenderPassColorAttachment = switch (emscripten) {
 };
 
 pub const RenderPassDepthStencilAttachment = extern struct {
+    next_in_chain: ?*const ChainedStruct = null,
     view: TextureView,
     depth_load_op: LoadOp = .undef,
     depth_store_op: StoreOp = .undef,
     depth_clear_value: f32 = 0.0,
-    depth_read_only: bool = false,
+    depth_read_only: c.WGPUBool = c.WGPU_FALSE,
     stencil_load_op: LoadOp = .undef,
     stencil_store_op: StoreOp = .undef,
     stencil_clear_value: u32 = 0,
-    stencil_read_only: bool = false,
+    stencil_read_only: c.WGPUBool = c.WGPU_FALSE,
 };
 
 pub const RenderPassDescriptor = extern struct {
@@ -1229,7 +1242,6 @@ pub const RenderPassDescriptor = extern struct {
 };
 
 pub const TexelCopyBufferLayout = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
     offset: u64 = 0,
     bytes_per_row: u32,
     rows_per_image: u32,
@@ -1242,13 +1254,11 @@ pub const Origin3D = extern struct {
 };
 
 pub const TexelCopyBufferInfo = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
     layout: TexelCopyBufferLayout,
     buffer: Buffer,
 };
 
 pub const TexelCopyTextureInfo = extern struct {
-    next_in_chain: ?*const ChainedStruct = null,
     texture: Texture,
     mip_level: u32 = 0,
     origin: Origin3D = .{},
@@ -1283,6 +1293,7 @@ pub const TextureViewDescriptor = extern struct {
     base_array_layer: u32 = 0,
     array_layer_count: u32 = 0xffff_ffff,
     aspect: TextureAspect = .all,
+    usage: TextureUsage = .{},
 };
 
 pub const CompilationMessage = extern struct {
@@ -1293,9 +1304,6 @@ pub const CompilationMessage = extern struct {
     line_pos: u64,
     offset: u64,
     length: u64,
-    utf16_line_pos: u64,
-    utf16_offset: u64,
-    utf16_length: u64,
 };
 
 pub const CompilationInfo = extern struct {
