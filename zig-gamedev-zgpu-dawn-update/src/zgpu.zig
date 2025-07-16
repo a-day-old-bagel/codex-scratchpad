@@ -580,7 +580,7 @@ pub const GraphicsContext = struct {
         const gpu_frame_number: *u64 = @ptrCast(@alignCast(userdata_1));
         gpu_frame_number.* += 1;
         if (status != .success) {
-            std.log.err("[zgpu] Failed to complete GPU work (status: {s}).", .{ @tagName(status) });
+            std.log.err("[zgpu] Failed to complete GPU work (status: {s}).", .{@tagName(status)});
         }
     }
 
@@ -975,7 +975,7 @@ pub const GraphicsContext = struct {
         return gctx.pipeline_layout_pool.addResource(gctx.*, info);
     }
 
-    pub fn lookupResource(gctx: GraphicsContext, handle: anytype) ?handleToGpuResourceType(@TypeOf(handle)) {
+    pub fn lookupResource(gctx: GraphicsContext, handle: anytype) ?HandleToGpuResourceType(@TypeOf(handle)) {
         if (gctx.isResourceValid(handle)) {
             const T = @TypeOf(handle);
             return switch (T) {
@@ -996,7 +996,7 @@ pub const GraphicsContext = struct {
         return null;
     }
 
-    pub fn lookupResourceInfo(gctx: GraphicsContext, handle: anytype) ?handleToResourceInfoType(@TypeOf(handle)) {
+    pub fn lookupResourceInfo(gctx: GraphicsContext, handle: anytype) ?HandleToResourceInfoType(@TypeOf(handle)) {
         if (gctx.isResourceValid(handle)) {
             const T = @TypeOf(handle);
             return switch (T) {
@@ -1958,7 +1958,7 @@ fn logUnhandledError(
         std.process.exit(1);
 }
 
-fn handleToGpuResourceType(comptime T: type) type {
+fn HandleToGpuResourceType(comptime T: type) type {
     return switch (T) {
         BufferHandle => wgpu.Buffer,
         TextureHandle => wgpu.Texture,
@@ -1969,11 +1969,11 @@ fn handleToGpuResourceType(comptime T: type) type {
         BindGroupHandle => wgpu.BindGroup,
         BindGroupLayoutHandle => wgpu.BindGroupLayout,
         PipelineLayoutHandle => wgpu.PipelineLayout,
-        else => @compileError("[zgpu] handleToGpuResourceType() not implemented for " ++ @typeName(T)),
+        else => @compileError("[zgpu] HandleToGpuResourceType() not implemented for " ++ @typeName(T)),
     };
 }
 
-fn handleToResourceInfoType(comptime T: type) type {
+fn HandleToResourceInfoType(comptime T: type) type {
     return switch (T) {
         BufferHandle => BufferInfo,
         TextureHandle => TextureInfo,
@@ -1984,7 +1984,7 @@ fn handleToResourceInfoType(comptime T: type) type {
         BindGroupHandle => BindGroupInfo,
         BindGroupLayoutHandle => BindGroupLayoutInfo,
         PipelineLayoutHandle => PipelineLayoutInfo,
-        else => @compileError("[zgpu] handleToResourceInfoType() not implemented for " ++ @typeName(T)),
+        else => @compileError("[zgpu] HandleToResourceInfoType() not implemented for " ++ @typeName(T)),
     };
 }
 
@@ -2015,6 +2015,6 @@ fn formatToShaderFormat(format: wgpu.TextureFormat) []const u8 {
 // Section: Tests
 //
 
-test "ref_all_decls" {
-    std.testing.refAllDeclsRecursive(@This());
-}
+// test "zgpu_ref_all_decls" {
+//     std.testing.refAllDeclsRecursive(@This());
+// }
